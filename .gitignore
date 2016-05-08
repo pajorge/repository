@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.program.revolutionnews" version="2.0.5" name="[COLOR red][R][/COLOR][COLOR white]Evolution News[/COLOR]" provider-name="[COLOR red][R][/COLOR][COLOR white]Evolution[/COLOR]">
+<addon id="plugin.program.pajorgenews" version="2.0.5" name="[COLOR red][R][/COLOR][COLOR white]PAJORGE News[/COLOR]" provider-name="[COLOR red][PAJORGE][/COLOR][COLOR white]KODI[/COLOR]">
   <requires>
   	<import addon="xbmc.python" version="2.1.0"/>
   	<import addon="script.module.addon.common" optional="true" />
@@ -11,8 +11,8 @@
   <extension point="xbmc.service" library="service.py" start="startup">
   </extension>
   <extension point="xbmc.addon.metadata">
-		<summary>NotÃ­cias da [R]Evolution</summary>
-		<description>Remember who we are, and letâ€™s start a [COLOR red][R][/COLOR][COLOR white]Evolution[/COLOR]</description>
+		<summary>NotÃ­cias do [PAJORGE]KODI</summary>
+		<description>Atualizacoes constates por [COLOR red][PAJORGE][/COLOR][COLOR white]KODI[/COLOR]</description>
 		<disclaimer></disclaimer>
   	<language>en</language>
   	<platform>all</platform>
