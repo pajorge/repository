@@ -52,3 +52,12 @@ Usar paquímetro e esquadro apoiado na aresta A. Nos furos, medir no lado **sem*
 - Guardar o papel traçado. Está a 1:1 e continua a servir depois de a peça ir para a máquina.
 - Tirar uma foto "de satélite": peça pousada no chão sobre fundo liso, telemóvel paralelo e afastado (~1.5 m, com zoom), fita métrica encostada à peça e as 4 esquinas de uma folha A4 visíveis. Com isso corrijo a perspetiva e confirmo o contorno.
 - Guardar a peça velha que sai da charrua, porque as posições dos furos são as mesmas.
+
+## Medidas recebidas (2.ª folha)
+
+- Centros dos furos a partir do F1: 105 / 210 / 315 (passo 105).
+- F1 → topo esquerda: (90).
+- (120) = altura total na ponta esquerda, da aresta A ao dedo P.
+- (128) e (250) são medidas até aos cantos vivos teóricos do triângulo (coerente com R~9–10 em V e B).
+
+Guia de medição detalhado (X ao longo de A, Y a partir de A, escareado e raios): `medicao/esquema_medicao.pdf`.
