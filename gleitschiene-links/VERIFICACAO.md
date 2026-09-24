@@ -67,3 +67,12 @@ Guia de medição detalhado (X ao longo de A, Y a partir de A, escareado e raios
 Caixa cilíndrica Ø25.5 com 7 de fundo, depois cone, depois furo Ø16 com 3 de altura no fundo.
 Para o cone sobram 14.7 − 7 − 3 = 4.7 mm; de Ø25.5 para Ø16 em 4.7 mm dá ~90°. Bate certo.
 Falta confirmar: o que o paquímetro leu nos furos pintados (Ø aço = Ø lido + 1) e o parafuso.
+
+## Tinta e parafuso
+
+- Tinta medida com medidor: 0.5 mm por face. Exteriores: aço = lido − 1. Furos e caixas: aço = lido + 1.
+- Espessura em aço 14.7 → especificar chapa de 15 mm.
+- Parafuso M16 (porcas M16). Leitura 16 no furo pintado → aço Ø17, a passagem normal para M16.
+  Caixa lida 25.5 → aço Ø26.5; o cone de Ø26.5 a Ø17 em ~4.7 mm continua a dar 90°.
+- ATENÇÃO: um M16 de cabeça de embeber normal (DIN 7991 / ISO 10642) tem cabeça Ø30 e não cabe
+  numa caixa de Ø26.5. Medir a cabeça dos parafusos originais antes de fechar o desenho.
