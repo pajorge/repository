@@ -152,31 +152,39 @@ def page_y(pdf):
 def page_extra(pdf):
     fig = plt.figure(figsize=(11.69, 8.27))
     fig.suptitle("3) ESCAREADO, RAIOS e o que já está resolvido", fontsize=14, weight="bold", x=0.02, ha="left", y=0.97)
-    # escareado
-    ax = fig.add_axes([0.01, 0.42, 0.50, 0.50]); ax.set_aspect("equal"); ax.axis("off")
-    t = 14.7
-    def csk(ax, x0, top, bot, depth, title, col):
-        ax.add_patch(Polygon([(x0 - 30, 0), (x0 - top/2, 0), (x0 - bot/2, -depth), (x0 - bot/2, -t), (x0 - 30, -t)], fc="#d5d8dc", ec=INK, lw=1, hatch="///"))
-        ax.add_patch(Polygon([(x0 + 30, 0), (x0 + top/2, 0), (x0 + bot/2, -depth), (x0 + bot/2, -t), (x0 + 30, -t)], fc="#d5d8dc", ec=INK, lw=1, hatch="///"))
-        ang = 2*np.degrees(np.arctan((top - bot)/2/depth))
-        ax.annotate("", (x0 - top/2, 4), (x0 + top/2, 4), arrowprops=dict(arrowstyle="<->", lw=0.8, color=col))
-        ax.text(x0, 6, f"Ø{top:g}", ha="center", fontsize=8, color=col)
-        ax.annotate("", (x0 - bot/2, -t - 3), (x0 + bot/2, -t - 3), arrowprops=dict(arrowstyle="<->", lw=0.8, color=col))
-        ax.text(x0, -t - 8, f"Ø{bot:g}", ha="center", fontsize=8, color=col)
-        ax.annotate("", (x0 - 27, 0), (x0 - 27, -depth), arrowprops=dict(arrowstyle="<->", lw=0.8, color=col))
-        ax.text(x0 - 25.5, -depth/2, f"{depth:g}", va="center", ha="left", fontsize=8, color=col, weight="bold",
-                bbox=dict(boxstyle="square,pad=0.1", fc="white", ec="none"))
-        ax.text(x0, -t - 15, f"ângulo = {ang:.0f}°", ha="center", fontsize=9, color=col, weight="bold")
-        ax.text(x0, 14, title, ha="center", fontsize=8.5, weight="bold")
-    csk(ax, 0, 25.5, 16, 7, "O que está na folha", RED)
-    csk(ax, 65, 30, 16, 7, "90° com Ø16 e 7 de fundo", GREEN)
-    csk(ax, 130, 25.5, 16, 4.75, "90° com Ø25.5 em cima", GREEN)
-    ax.set_xlim(-32, 165); ax.set_ylim(-52, 20)
-    ax.text(-32, -36, "As 3 medidas da folha não fecham num ângulo normalizado (90°). Uma delas está errada:\n"
-            "a tinta arredonda o bordo de cima do escareado e o paquímetro lê um Ø menor.\n"
-            "Solução mais simples: quando montares, diz-me o PARAFUSO (ex.: M16 cabeça de embeber\n"
-            "DIN 7991 / ISO 10642, ou de fenda DIN 7969). O escareado define-se pelo parafuso.",
-            fontsize=8, va="top")
+    # escareado: caixa cilíndrica + cone 90° + furo (medido na 3.ª folha)
+    ax = fig.add_axes([0.01, 0.40, 0.50, 0.53]); ax.set_aspect("equal"); ax.axis("off")
+    t, dcb, hcb, dh, hcyl = 14.7, 25.5, 7.0, 16.0, 3.0
+    hcone = t - hcb - hcyl
+    ang = 2*np.degrees(np.arctan((dcb - dh)/2/hcone))
+    W = 22
+    for sgn in (-1, 1):
+        prof = [(sgn*W, 0), (sgn*dcb/2, 0), (sgn*dcb/2, -hcb), (sgn*dh/2, -hcb - hcone), (sgn*dh/2, -t), (sgn*W, -t)]
+        ax.add_patch(Polygon(prof, fc="#d5d8dc", ec=INK, lw=1.2, hatch="///"))
+    ax.plot([0, 0], [3, -t - 3], color=GREY, lw=0.6, ls="-.")
+    def dimh(y, x0, x1, txt, col):
+        ax.annotate("", (x0, y), (x1, y), arrowprops=dict(arrowstyle="<->", lw=0.9, color=col))
+        ax.text((x0 + x1)/2, y + 1, txt, ha="center", va="bottom", fontsize=9, color=col, weight="bold")
+    def dimv(x, y0, y1, txt, col, ha="left"):
+        ax.annotate("", (x, y0), (x, y1), arrowprops=dict(arrowstyle="<->", lw=0.9, color=col))
+        ax.text(x + (1 if ha == "left" else -1), (y0 + y1)/2, txt, ha=ha, va="center", fontsize=9, color=col, weight="bold")
+    dimh(2.5, -dcb/2, dcb/2, "Ø25.5 caixa", GREEN)
+    dimh(-t - 3.5, -dh/2, dh/2, "", GREEN); ax.text(0, -t - 6.5, "Ø16 passagem", ha="center", fontsize=9, color=GREEN, weight="bold")
+    dimv(W + 2, 0, -hcb, "7", GREEN); dimv(W + 2, -hcb, -hcb - hcone, f"{hcone:.1f}", RED); dimv(W + 2, -hcb - hcone, -t, "3", GREEN)
+    dimv(-W - 2, 0, -t, "14.7", GREY, ha="right")
+    ax.text(-dh/2 + 1.0, -hcb - hcone/2 - 0.3, f"{ang:.0f}° ≈ 90°", ha="left", va="center", fontsize=10, color=RED, weight="bold")
+    ax.text(0, 8, "ESCAREADO: agora bate certo  ✓", ha="center", fontsize=11, weight="bold", color=GREEN)
+    ax.text(-W - 8, -t - 10,
+            f"Caixa Ø25.5 com 7 de fundo + cone + Ø16 com 3 no fundo.  Sobram 14.7 − 7 − 3 = {hcone:.1f} mm para o cone,\n"
+            f"e de Ø25.5 para Ø16 em {hcone:.1f} mm dá {ang:.0f}°, ou seja, escareado normal de 90°.\n"
+            "A caixa de 7 mm deixa a cabeça do parafuso bem abaixo da superfície (protegida do desgaste).\n\n"
+            "Falta só confirmar 2 coisas:\n"
+            "  1. O que LEU o paquímetro no furo pintado? A tinta ENCOLHE os furos: Ø aço = Ø lido + 1.\n"
+            "      Se leste 16 na passagem → aço 17 (passagem normal de M16). Se leste 15 → aço 16.\n"
+            "      Idem na caixa: se leste 25.5 → aço 26.5.\n"
+            "  2. O parafuso (M16? cabeça de embeber? norma?) — confirma que a cabeça cabe na caixa.",
+            fontsize=8, va="top", linespacing=1.5)
+    ax.set_xlim(-32, 32); ax.set_ylim(-52, 11)
     # raios
     ax2 = fig.add_axes([0.52, 0.40, 0.46, 0.52]); ax2.axis("off")
     ax2.text(0, 1, "RAIOS dos cantos: truque das moedas", fontsize=10, weight="bold", va="top")
@@ -199,6 +207,7 @@ def page_extra(pdf):
     ax3.text(0, 1, "Com as tuas novas cotas, já batem certo:", fontsize=10, weight="bold", va="top", color=GREEN)
     ax3.text(0, 0.88,
              "✓ Furos a 105 / 210 / 315 do F1 (passo 105) e, no papel, todos a ~50 da aresta A.\n"
+             "✓ Escareado: caixa Ø25.5 × 7 + cone 90° + Ø16 × 3 (ver acima).\n"
              "✓ (128) e (250) são até aos cantos 'vivos' teóricos do triângulo: batem com 173, 102 e 208 se V e B tiverem raio ~R9–R10.\n"
              "✓ Os rasgos parecem estar a meio entre furos (~52 mm do furo anterior) e com fundo de ~R19–20. Confirma com X3…X13.",
              fontsize=8.5, va="top", linespacing=1.6)

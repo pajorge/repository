@@ -61,3 +61,9 @@ Usar paquímetro e esquadro apoiado na aresta A. Nos furos, medir no lado **sem*
 - (128) e (250) são medidas até aos cantos vivos teóricos do triângulo (coerente com R~9–10 em V e B).
 
 Guia de medição detalhado (X ao longo de A, Y a partir de A, escareado e raios): `medicao/esquema_medicao.pdf`.
+
+## Escareado (3.ª folha)
+
+Caixa cilíndrica Ø25.5 com 7 de fundo, depois cone, depois furo Ø16 com 3 de altura no fundo.
+Para o cone sobram 14.7 − 7 − 3 = 4.7 mm; de Ø25.5 para Ø16 em 4.7 mm dá ~90°. Bate certo.
+Falta confirmar: o que o paquímetro leu nos furos pintados (Ø aço = Ø lido + 1) e o parafuso.
