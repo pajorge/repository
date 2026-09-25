@@ -51,9 +51,14 @@ RASGOS = [
     ("N3", 158.8, 39.3, 51.3),     # CONFIRMAR (posição acertada para o dente D3 = 64.7 medido)
     ("N4", 262.8, 39.3, 36.0),     # largura 38.3 lida c/ tinta; fundo = canto D3 - 34.7 medido
 ]
+# Inclinação das paredes de cada rasgo, em graus em relação à perpendicular à aresta A.
+# Positivo = a boca do rasgo (junto aos dentes) foge para o lado do triângulo (+X).
+# A MEDIR: com o esquadro viu-se que não estão a 90° da aresta A.
+RASGOS_INCL = {"N1": 0.0, "N2": 0.0, "N3": 0.0, "N4": 0.0}
 
 # Degrau E e triângulo
-DEGRAU_X = 304.6           # CONFIRMAR (papel)
+DEGRAU_X = 304.6           # CONFIRMAR (papel): X do canto de dentro patamar/degrau
+DEGRAU_INCL = 3.0          # A MEDIR: não está a 90° de A (esquadro); papel ~3°, bico para +X
 BICO_Y = 173.0             # medido
 DEGRAU_A_VIVO = 127.0      # patamar -> canto vivo teórico do bico (lido 128 c/ tinta)
 HIPOT_VIVO = 249.0         # canto vivo a canto vivo na hipotenusa (lido 250 c/ tinta)
@@ -72,15 +77,44 @@ def topo_x(y):
     return -F1_A_TOPO + (y - FURO_Y) * tan(radians(TOPO_INCL))
 
 
+def direcao(ang):
+    """Direção 'para baixo' (d, +Y) inclinada 'ang' graus para +X, e a normal n (para +X)."""
+    a = radians(ang)
+    return np.array([np.sin(a), np.cos(a)]), np.array([np.cos(a), -np.sin(a)])
+
+
+def ate_dentes(p, d):
+    """Ponto onde a reta p + t*d corta a linha dos dentes."""
+    t = (dentes_y(p[0]) - p[1]) / (d[1] + T * d[0])
+    return p + t * d
+
+
+def rasgo(nome):
+    """Geometria de um rasgo em U (possivelmente inclinado)."""
+    _, cx, w, yf = next(r for r in RASGOS if r[0] == nome)
+    d, n = direcao(RASGOS_INCL[nome])
+    c = np.array([cx, yf + w / 2])                  # centro do arco; fundo = c - (0, w/2)
+    r = {"c": c, "d": d, "n": n, "w": w}
+    for lado, s in (("E", -1), ("D", 1)):
+        topo = c + s * (w / 2) * n                  # onde a parede reta começa (tangente ao arco)
+        if nome == "N1" and lado == "E":            # parede interior do dedo acaba no fundo do dedo
+            boca = topo + (DEDO_Y - topo[1]) / d[1] * d
+        else:
+            boca = ate_dentes(topo, d)
+        r[lado + "_topo"], r[lado + "_boca"] = topo, boca
+    return r
+
+
 def geometria():
     """Pontos principais derivados dos parâmetros (X, Y)."""
     g = {}
     g["C2"] = (topo_x(CHANFRO_Y), CHANFRO_Y)
     g["C1"] = (g["C2"][0] + CHANFRO_X, 0.0)
     g["E"] = (DEGRAU_X, dentes_y(DEGRAU_X))
-    by = g["E"][1] + DEGRAU_A_VIVO
-    g["B_vivo"] = (DEGRAU_X, by)
-    g["V_vivo"] = (DEGRAU_X + sqrt(HIPOT_VIVO**2 - by**2), 0.0)
+    dE, _ = direcao(DEGRAU_INCL)
+    bx, by = np.array(g["E"]) + DEGRAU_A_VIVO * dE
+    g["B_vivo"] = (bx, by)
+    g["V_vivo"] = (bx + sqrt(HIPOT_VIVO**2 - by**2), 0.0)
     return g
 
 
@@ -88,13 +122,24 @@ def raio_bico(g):
     """Raio no bico B tal que o ponto mais baixo do arco fica a BICO_Y da aresta A."""
     bx, by = g["B_vivo"]
     vx, _ = g["V_vivo"]
-    u1 = np.array([0.0, -1.0])                                  # do bico para cima (degrau)
+    u1 = -direcao(DEGRAU_INCL)[0]                               # do bico para cima (degrau)
     u2 = np.array([vx - bx, -by]); u2 /= np.linalg.norm(u2)     # do bico para o vértice
     half = np.arccos(np.dot(u1, u2)) / 2
     bis = (u1 + u2) / np.linalg.norm(u1 + u2)
     # centro = vivo + bis * R/sin(half); ponto mais baixo = centro_y + R
     k = bis[1] / np.sin(half)
     return (BICO_Y - by) / (k + 1)
+
+
+def bico_centro(g):
+    """Centro do arco do bico (o ponto mais baixo tem o mesmo X) e ângulo da hipotenusa com A."""
+    bx, by = g["B_vivo"]; vx, _ = g["V_vivo"]; r = g["R_BICO"]
+    u1 = -direcao(DEGRAU_INCL)[0]
+    u2 = np.array([vx - bx, -by]); u2 /= np.linalg.norm(u2)
+    half = np.arccos(np.dot(u1, u2)) / 2
+    bis = (u1 + u2) / np.linalg.norm(u1 + u2)
+    c = np.array([bx, by]) + bis * r / np.sin(half)
+    return c, np.degrees(np.arctan2(by, vx - bx))
 
 
 def modelo():
@@ -108,13 +153,14 @@ def modelo():
             (x_dedo_ext, DEDO_Y), g["C2"]]
     base = [(x, -y) for x, y in base]
 
+    rs = {r[0]: rasgo(r[0]) for r in RASGOS}
     with BuildSketch() as sk:
         Polygon(*base, align=None)
-        for _, cx, w, yf in RASGOS:
-            yc = yf + w / 2
-            with Locations((cx, -(yc + 100))):
-                Rectangle(w, 200, mode=Mode.SUBTRACT)
-            with Locations((cx, -yc)):
+        for r in rs.values():
+            c, d, n, w = r["c"], r["d"], r["n"], r["w"]
+            cantos = [c - w / 2 * n, c + w / 2 * n, c + w / 2 * n + 200 * d, c - w / 2 * n + 200 * d]
+            Polygon(*[(x, -y) for x, y in cantos], align=None, mode=Mode.SUBTRACT)
+            with Locations((c[0], -c[1])):
                 Circle(w / 2, mode=Mode.SUBTRACT)
 
         def perto(pts, tol=0.8):
@@ -126,13 +172,10 @@ def modelo():
             return out
 
         # cantos da boca dos rasgos (dentes) e canto interior do degrau
-        bocas = []
-        for _, cx, w, _ in RASGOS[1:]:
-            bocas += [(cx - w / 2, dentes_y(cx - w / 2)), (cx + w / 2, dentes_y(cx + w / 2))]
-        bocas.append((n1[1] + n1[2] / 2, dentes_y(n1[1] + n1[2] / 2)))
+        bocas = [tuple(r[k]) for r in rs.values() for k in ("E_boca", "D_boca")]
+        dedo_int = bocas.pop(0)                      # N1 esquerdo = canto interior do dedo
         fillet(perto(bocas + [g["E"], g["C1"], g["C2"]]), R_PEQUENO)
-        dedo_int = n1[1] - n1[2] / 2
-        fillet(perto([(dedo_int, DEDO_Y), (x_dedo_ext, DEDO_Y)]), R_DEDO)
+        fillet(perto([dedo_int, (x_dedo_ext, DEDO_Y)]), R_DEDO)
         fillet(perto([g["B_vivo"]]), g["R_BICO"])
         fillet(perto([g["V_vivo"]]), R_VERTICE)
     perfil = sk.sketch
@@ -159,7 +202,7 @@ def modelo():
         corte2d = corte2d - c.sketch
 
     g.update(dict(perfil=perfil, corte2d=corte2d, peca=peca, furos=furos, cone_h=cone_h,
-                  x_dedo_ext=x_dedo_ext))
+                  x_dedo_ext=x_dedo_ext, rasgos=rs))
     return g
 
 

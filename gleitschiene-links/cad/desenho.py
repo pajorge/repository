@@ -63,13 +63,7 @@ def leader(ax, pt, txt_pt, txt, color=INK, fs=6.3, ha="left"):
 
 
 def bico_info(g):
-    bx, by = g["B_vivo"]; vx, _ = g["V_vivo"]; r = g["R_BICO"]
-    u1 = np.array([0.0, -1.0]); u2 = np.array([vx - bx, -by]); u2 /= np.linalg.norm(u2)
-    half = np.arccos(np.dot(u1, u2)) / 2
-    bis = (u1 + u2) / np.linalg.norm(u1 + u2)
-    c = np.array([bx, by]) + bis * r / np.sin(half)
-    ang_hip = np.degrees(np.arctan2(by, vx - bx))
-    return c, ang_hip
+    return G.bico_centro(g)
 
 
 def desenho(g):
@@ -130,8 +124,9 @@ def desenho(g):
     leader(ax, (vx - 1.5, ya - 1.5), (vx - 22, ya + 7), f"R{G.R_VERTICE:g}*", RED)
     hx, hy = P(g["V_vivo"][0] - 60, 60 * tan(radians(ang_hip)))
     ax.text(hx + 6, hy - 2, f"{ang_hip:.1f}°* com A", fontsize=6.3, color=RED)
-    d3a = G.RASGOS[2][1] + G.RASGOS[2][2] / 2; d3b = G.RASGOS[3][1] - G.RASGOS[3][2] / 2
-    x1, y1 = P(d3a, G.dentes_y(d3a)); x2, y2 = P(d3b, G.dentes_y(d3b))
+    pa, pb = g["rasgos"]["N3"]["D_boca"], g["rasgos"]["N4"]["E_boca"]
+    d3a, d3b = pa[0], pb[0]
+    x1, y1 = P(*pa); x2, y2 = P(*pb)
     hdim(ax, x1, x2, y2 - 16, f"{d3b - d3a:.1f}", ya=y1, yb=y2, fs=5.8)
     n4 = G.RASGOS[3]
     nx1, ny = P(n4[1] - n4[2] / 2, n4[3] + n4[2] / 2); nx2, _ = P(n4[1] + n4[2] / 2, 0)
@@ -172,9 +167,9 @@ def desenho(g):
     rows.append(("Dedo P", f"{g['x_dedo_ext']:.1f} … {g['x_dedo_ext'] + G.DEDO_LARG:.1f}", f"{G.DEDO_Y:g}", f"largura {G.DEDO_LARG:g}, R{G.R_DEDO:g}"))
     for nome, cx, w, yf in G.RASGOS:
         st = "" if nome == "N4" else "*"
-        rows.append((f"Rasgo {nome}", f"{cx:g}{'*' if nome != 'N4' else '*'}", f"fundo {yf:g}{st}", f"largura {w:g}{'*' if nome == 'N1' else ''}, R{w/2:g}"))
+        rows.append((f"Rasgo {nome}", f"{cx:g}{'*' if nome != 'N4' else '*'}", f"fundo {yf:g}{st}", f"larg. {w:g}{'*' if nome == 'N1' else ''}, R{w/2:g}, paredes {G.RASGOS_INCL[nome]:g}°*"))
     rows.append(("Linha dos dentes", f"passa em {G.DENTES_X0:g}", f"{G.DENTES_Y0:g}", f"{G.DENTES_INCL:g}° com A*"))
-    rows.append(("Degrau E", f"{G.DEGRAU_X:g}*", f"{g['E'][1]:.1f} → bico", f"canto interior R{G.R_PEQUENO:g}*"))
+    rows.append(("Degrau E", f"{G.DEGRAU_X:g}*", f"{g['E'][1]:.1f} → bico", f"inclinado {G.DEGRAU_INCL:g}°*, canto int. R{G.R_PEQUENO:g}*"))
     rows.append(("Bico B (ponto + baixo)", f"{c[0]:.1f}", f"{G.BICO_Y:g}", f"R{g['R_BICO']:.1f}*  (de 173, 128, 250)"))
     rows.append(("Vértice V (ponta)", f"{bb.max.X:.1f}", "0", f"R{G.R_VERTICE:g}*;  hipotenusa {ang_hip:.1f}°"))
     rows.append(("Cantos dos dentes/chanfro", "", "", f"R{G.R_PEQUENO:g}*"))
